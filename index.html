@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #map {
+        width: 1000px;
+        height: 600px;
+      }
+    </style>
+
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.css"
+    />
+  </head>
+  <body>
+    <h1>Map</h1>
+    <div id="map"></div>
+    ;
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.js"></script>
+    <script>
+      const userAction = async () => {
+        let tiles = new L.tileLayer(
+          "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
+          {
+            detectRetina: true,
+            maxZoom: 18,
+            minZoom: 11,
+            //Do not remove this attribution
+            attribution:
+              '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
+              'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
+          }
+        );
+
+        let map = new L.Map("map", {
+          center: [1.347833, 103.809357],
+          zoom: 12,
+          maxBounds: L.latLngBounds(L.latLng(1.2, 103.5), L.latLng(1.6, 104.3)),
+        }).addLayer(tiles);
+
+        const response = await fetch(
+          "https://api.data.gov.sg/v1/environment/psi"
+        );
+        const govJsonEnvironment = await response.json(); //extract JSON from the http response
+        // do something with myJson
+        var regionMetaData = govJsonEnvironment.region_metadata;
+        console.log(regionMetaData);
+        var psiReadings =
+          govJsonEnvironment.items[0].readings.psi_twenty_four_hourly;
+        for (let i = 0; i < regionMetaData.length; i++) {
+          let locationRegion = regionMetaData[i].name;
+          let psiReadingForLocationRegion = psiReadings[locationRegion];
+
+          regionMetaData[i].psireading = psiReadingForLocationRegion;
+
+          var circle = L.circle(
+            [
+              regionMetaData[i].label_location.latitude,
+              regionMetaData[i].label_location.longitude,
+            ],
+            {
+              color: "red", //getColor(currentpsireading),
+              fillOpacity: 0.5,
+              radius: 1000,
+            }
+          ).addTo(map);
+        }
+      };
+      userAction();
+    </script>
+  </body>
+</html>
