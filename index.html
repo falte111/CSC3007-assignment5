@@ -51,23 +51,83 @@
           govJsonEnvironment.items[0].readings.psi_twenty_four_hourly;
         for (let i = 0; i < regionMetaData.length; i++) {
           let locationRegion = regionMetaData[i].name;
+          console.log;
           let psiReadingForLocationRegion = psiReadings[locationRegion];
-
           regionMetaData[i].psireading = psiReadingForLocationRegion;
-
+          var colorInitial = "red";
+          var statusInitial = "good";
+          if (
+            psiReadingForLocationRegion >= 0 &&
+            psiReadingForLocationRegion <= 50
+          ) {
+            colorInitial = "#339900";
+          } else if (
+            psiReadingForLocationRegion > 50 &&
+            psiReadingForLocationRegion <= 100
+          ) {
+            statusInitial = "Moderate";
+            colorInitial = "#99cc33";
+          } else if (
+            psiReadingForLocationRegion > 100 &&
+            psiReadingForLocationRegion <= 200
+          ) {
+            statusInitial = "Unhealthy";
+            colorInitial = "#ffcc00";
+          } else if (
+            psiReadingForLocationRegion > 200 &&
+            psiReadingForLocationRegion <= 300
+          ) {
+            statusInitial = "Very Unhealthy";
+            colorInitial = "#ff9966";
+          } else if (psiReadingForLocationRegion > 300) {
+            statusInitial = "Hazardous";
+            colorInitial = "#cc3300";
+          }
           var circle = L.circle(
             [
               regionMetaData[i].label_location.latitude,
               regionMetaData[i].label_location.longitude,
             ],
             {
-              color: "red", //getColor(currentpsireading),
+              color: colorInitial,
               fillOpacity: 0.5,
               radius: 1000,
             }
           ).addTo(map);
+          //Add popup messages to the circles
+          locationRegion =
+            locationRegion.charAt(0).toUpperCase() + locationRegion.slice(1);
+          statusInitial =
+            statusInitial.charAt(0).toUpperCase() + statusInitial.slice(1);
+          circle.bindPopup(
+            "<strong>" +
+              "Region: " +
+              locationRegion +
+              "</strong>" +
+              "<br>" +
+              "<strong>" +
+              "Status: " +
+              statusInitial +
+              "</strong>"
+          );
+          L.marker(
+            [
+              regionMetaData[i].label_location.latitude,
+              regionMetaData[i].label_location.longitude,
+            ],
+            {
+              icon: L.divIcon({
+                className: "marker",
+                html:
+                  "<div style=font-size:12px>" +
+                  psiReadingForLocationRegion +
+                  "</div>",
+              }),
+            }
+          ).addTo(map);
         }
       };
+
       userAction();
     </script>
   </body>
